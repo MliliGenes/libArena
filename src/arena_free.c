@@ -6,14 +6,14 @@
 /*   By: sel <sel@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 14:29:03 by sel               #+#    #+#             */
-/*   Updated: 2025/08/29 14:55:21 by sel              ###   ########.fr       */
+/*   Updated: 2025/08/29 15:27:14 by sel              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/lib_arena.h"
 
 /* Free a single tracked allocation */
-void collector_free_ptr(Collector *c, void *ptr)
+void arena_free(Collector *c, void *ptr)
 {
     size_t i;
 
@@ -35,7 +35,7 @@ void collector_free_ptr(Collector *c, void *ptr)
 }
 
 /* Free all allocations and destroy collector */
-void collector_end(Collector *c)
+void arena_destroy(Collector *c)
 {
     size_t i;
 

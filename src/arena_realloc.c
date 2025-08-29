@@ -1,34 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   collector_alloc.c                                  :+:      :+:    :+:   */
+/*   arena_realloc.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sel <sel@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/29 14:28:59 by sel               #+#    #+#             */
-/*   Updated: 2025/08/29 14:59:26 by sel              ###   ########.fr       */
+/*   Created: 2025/08/29 14:29:07 by sel               #+#    #+#             */
+/*   Updated: 2025/08/29 15:25:56 by sel              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/lib_arena.h"
 
-/* Allocate memory and register it in the collector */
-void* collector_start(Collector *c, size_t bytes)
+/* Reallocate memory and update the registry */
+void* arena_realloc(Collector *c, void *ptr, size_t new_size)
 {
-    void *ptr;
+    size_t i;
+    void *new_ptr;
 
-    if (c->size == c->capacity)
-    {
-        if (!collector_resize(c))
-            return (NULL);
-    }
-    ptr = malloc(bytes);
     if (!ptr)
+        return (arena_alloc(c, new_size));
+    i = 0;
+    while (i < c->size)
+    {
+        if ((void*)c->addresses[i] == ptr)
+            break ;
+        i++;
+    }
+    if (i == c->size)
         return (NULL);
-    c->addresses[c->size] = (uintptr_t)ptr;
-    c->finalizers[c->size] = NULL;
-    c->size++;
-    return (ptr);
+    new_ptr = realloc(ptr, new_size);
+    if (!new_ptr)
+        return (NULL);
+    c->addresses[i] = (uintptr_t)new_ptr;
+    return (new_ptr);
 }
-
-

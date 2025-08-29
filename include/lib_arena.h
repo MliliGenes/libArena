@@ -6,7 +6,7 @@
 /*   By: sel <sel@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/29 14:28:52 by sel               #+#    #+#             */
-/*   Updated: 2025/08/29 14:52:02 by sel              ###   ########.fr       */
+/*   Updated: 2025/08/29 15:39:48 by sel              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,35 +19,33 @@
 #include <string.h>
 
 /**
- * @file libarena.h
- * @brief 42-norm-compliant C memory collector library.
+ * @file lib_arena.h
+ * @brief LibArena: Lightweight C memory management library.
  *
- * Provides:
- *  - Allocation tracking with automatic cleanup.
- *  - Scoped checkpoints for rollback.
- *  - Reallocation support.
- *  - Custom finalizers for nested resources.
- *  - Auto-resizing internal registry.
+ * LibArena provides tracked memory allocation with automatic cleanup,
+ * custom finalizers, scoped allocation checkpoints, and safe realloc support.
  *
  * Example usage:
- *  Collector *c = collector_init(4);
- *  int *x = collector_start(c, sizeof(int));
- *  collector_register_finalizer(c, x, my_cleanup);
- *  size_t cp = collector_checkpoint(c);
- *  collector_scope_end(c, cp);
- *  collector_end(c);
+ *   Collector *c = arena_create(10);
+ *   int *arr = arena_alloc(c, sizeof(int) * 5);
+ *   arena_destroy(c);
  */
 
 /**
  * @struct Collector
- * @brief Tracks allocated pointers and optional finalizers.
+ * @brief Tracks allocated memory blocks and optional cleanup functions.
+ *
+ * - `addresses` stores pointers to allocated memory.
+ * - `finalizers` stores optional cleanup functions for each pointer.
+ * - `capacity` is the current maximum number of tracked pointers.
+ * - `size` is the number of currently tracked allocations.
  */
 typedef struct s_collector
 {
-    uintptr_t *addresses;       /**< Array of allocated pointers */
-    void (**finalizers)(void*); /**< Array of optional finalizers */
-    size_t capacity;            /**< Maximum capacity of arrays */
-    size_t size;                /**< Current number of tracked allocations */
+    uintptr_t       *addresses;   /**< Array of allocated pointers */
+    void            (**finalizers)(void*); /**< Optional cleanup functions */
+    size_t          capacity;     /**< Maximum capacity of arrays */
+    size_t          size;         /**< Current number of tracked allocations */
 } Collector;
 
 /* ==========================
@@ -55,21 +53,20 @@ typedef struct s_collector
    ========================== */
 
 /**
- * @brief Initialize a new collector.
- * @param initial_capacity Initial size of internal arrays.
- * @return Pointer to a Collector instance, or NULL on failure.
+ * @brief Create a new memory collector.
+ * @param initial_capacity Initial capacity for tracking allocations.
+ * @return Pointer to a Collector instance, or NULL on allocation failure.
  */
-Collector* collector_init(size_t initial_capacity);
+Collector *arena_create(size_t initial_capacity);
 
 /**
- * @brief Resize the internal arrays of the collector.
+ * @brief Grow the internal tracking arrays of the collector.
  * @param c Collector instance.
- * @return 1 on success, 0 on allocation failure.
+ * @return 1 on success, 0 if memory allocation fails.
  *
- * This function doubles the capacity of the collector's internal arrays.
- * It preserves existing tracked pointers and finalizers.
+ * The capacity is doubled, and existing allocations are preserved.
  */
-int collector_resize(Collector *c);
+int arena_grow(Collector *c);
 
 /**
  * @brief Allocate memory and register it in the collector.
@@ -77,50 +74,65 @@ int collector_resize(Collector *c);
  * @param bytes Number of bytes to allocate.
  * @return Pointer to allocated memory, or NULL on failure.
  */
-void* collector_start(Collector *c, size_t bytes);
+void *arena_alloc(Collector *c, size_t bytes);
 
 /**
- * @brief Reallocate a tracked pointer and update the registry.
+ * @brief Reallocate a tracked memory block and update the collector.
  * @param c Collector instance.
- * @param ptr Pointer previously allocated with collector_start.
- * @param new_size New size in bytes.
+ * @param ptr Previously allocated pointer.
+ * @param new_size New allocation size in bytes.
  * @return Pointer to reallocated memory, or NULL on failure.
  */
-void* collector_realloc(Collector *c, void *ptr, size_t new_size);
+void *arena_realloc(Collector *c, void *ptr, size_t new_size);
 
 /**
- * @brief Register a cleanup function (finalizer) for a pointer.
+ * @brief Register a custom cleanup function for a pointer.
  * @param c Collector instance.
  * @param ptr Pointer to register.
- * @param finalize Function to call on free.
+ * @param finalize Function to call when the pointer is freed.
+ *
+ * Note: The finalizer should not free the pointer itself; LibArena
+ *       handles freeing memory automatically.
  */
-void collector_register_finalizer(Collector *c, void *ptr, void (*finalize)(void*));
+void arena_set_destructor(Collector *c, void *ptr, void (*finalize)(void*));
 
 /**
  * @brief Free a single allocation tracked by the collector.
  * @param c Collector instance.
  * @param ptr Pointer to free.
+ *
+ * If a finalizer is registered for the pointer, it is called first.
  */
-void collector_free_ptr(Collector *c, void *ptr);
+void arena_free(Collector *c, void *ptr);
 
 /**
  * @brief Take a checkpoint to mark the current allocation state.
  * @param c Collector instance.
- * @return Checkpoint value (current size of registry).
+ * @return Checkpoint value representing the current size of the registry.
+ *
+ * Later, you can use `arena_restore` to free all allocations made
+ * after this checkpoint.
  */
-size_t collector_checkpoint(Collector *c);
+size_t arena_snapshot(Collector *c);
 
 /**
- * @brief Free all allocations made since a checkpoint.
+ * @brief Free all allocations made after a checkpoint.
  * @param c Collector instance.
- * @param checkpoint Checkpoint value obtained earlier.
+ * @param checkpoint Checkpoint value returned by `arena_snapshot`.
+ *
+ * Only allocations registered after the checkpoint are freed.
+ * Allocations before the checkpoint remain untouched.
  */
-void collector_scope_end(Collector *c, size_t checkpoint);
+void arena_restore(Collector *c, size_t checkpoint);
 
 /**
- * @brief Free all allocations and destroy the collector.
+ * @brief Free all tracked allocations and destroy the collector.
  * @param c Collector instance.
+ *
+ * All memory managed by the collector is freed, and any registered
+ * finalizers are called. After this call, the collector pointer
+ * must not be used.
  */
-void collector_end(Collector *c);
+void arena_destroy(Collector *c);
 
 #endif /* LIBARENA_H */

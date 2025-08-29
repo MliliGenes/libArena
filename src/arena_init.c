@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   collector_init.c                                   :+:      :+:    :+:   */
+/*   arena_create.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sel <sel@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -32,7 +32,7 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 }
 
 /* Internal helper: resize the collector's arrays */
-int collector_resize(Collector *c)
+int arena_grow(Collector *c)
 {
     size_t new_capacity;
     uintptr_t *new_addr;
@@ -58,7 +58,7 @@ int collector_resize(Collector *c)
 }
 
 /* Initialize a new collector */
-Collector* collector_init(size_t initial_capacity)
+Collector* arena_create(size_t initial_capacity)
 {
     Collector *c;
 
