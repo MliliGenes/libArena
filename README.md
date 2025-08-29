@@ -115,7 +115,6 @@ This project uses a `Makefile` with several targets:
 - `make clean`: Removes temporary object files.
 - `make fclean`: Removes object files and the static library.
 - `make re`: Rebuilds the project from scratch.
-- `make test`: Builds the library and runs the test suite located in the `tests/` directory.
 - `make debug`: Builds the library with debug symbols and address sanitizer flags.
 
 ## License
