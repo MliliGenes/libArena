@@ -1,18 +1,23 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   collector_free.c                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sel <sel@student.42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/29 14:29:03 by sel               #+#    #+#             */
-/*   Updated: 2025/08/29 15:27:14 by sel              ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
+/**
+ * @file arena_free.c
+ * @brief Functions for freeing and destroying arena allocations.
+ * @date 2025-08-29
+ */
 #include "../include/lib_arena.h"
 
-/* Free a single tracked allocation */
+/**
+ * @brief Frees a single tracked allocation from the arena.
+ *
+ * This function searches for the specified pointer in the arena. If found,
+ * it performs the following actions:
+ * 1. Calls the associated finalizer if one has been set.
+ * 2. Frees the memory using `free`.
+ * 3. Clears the entry in the `addresses` and `finalizers` arrays to prevent
+ *    double-frees.
+ *
+ * @param c The arena collector instance.
+ * @param ptr The pointer to the memory to be freed.
+ */
 void arena_free(Collector *c, void *ptr)
 {
     size_t i;
@@ -22,37 +27,53 @@ void arena_free(Collector *c, void *ptr)
     {
         if ((void*)c->addresses[i] == ptr)
         {
-            /* Call finalizer for cleanup but do not free the pointer */
+            // If a finalizer exists, call it before freeing.
             if (c->finalizers[i])
                 c->finalizers[i](ptr);
-            free(ptr); /* LibArena always frees the memory */
+
+            // Free the memory and clear its tracking slot.
+            free(ptr);
             c->addresses[i] = 0;
             c->finalizers[i] = NULL;
-            return ;
+            return;
         }
         i++;
     }
 }
 
-/* Free all allocations and destroy collector */
+/**
+ * @brief Frees all tracked allocations and destroys the collector.
+ *
+ * This function iterates through all tracked pointers in the arena,
+ * calls any registered finalizers, and frees the associated memory.
+ * Finally, it frees the internal tracking arrays and the collector struct itself.
+ *
+ * @param c The arena collector to be destroyed.
+ */
 void arena_destroy(Collector *c)
 {
     size_t i;
 
     if (!c)
-        return ;
+        return;
+
     i = 0;
     while (i < c->size)
     {
+        // Ensure the pointer has not already been freed.
         if (c->addresses[i] != 0)
         {
-            /* Call finalizer for cleanup but LibArena frees memory */
+            // Call the finalizer if it exists.
             if (c->finalizers[i])
                 c->finalizers[i]((void*)c->addresses[i]);
+
+            // Free the tracked memory.
             free((void*)c->addresses[i]);
         }
         i++;
     }
+
+    // Free the internal arrays and the collector itself.
     free(c->addresses);
     free(c->finalizers);
     free(c);
