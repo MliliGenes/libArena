@@ -26,10 +26,8 @@
 #ifndef LIBARENA_H
 #define LIBARENA_H
 
-#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <string.h>
 
 /**
  * @struct Collector

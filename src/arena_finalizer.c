@@ -26,10 +26,8 @@ void arena_set_destructor(Collector *c, void *ptr, void (*finalize)(void*))
     i = 0;
     while (i < c->size)
     {
-        // Find the matching pointer in the registry.
         if ((void*)c->addresses[i] == ptr)
         {
-            // Assign the finalizer to the corresponding slot.
             c->finalizers[i] = finalize;
             return;
         }

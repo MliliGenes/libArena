@@ -27,11 +27,8 @@ void arena_free(Collector *c, void *ptr)
     {
         if ((void*)c->addresses[i] == ptr)
         {
-            // If a finalizer exists, call it before freeing.
             if (c->finalizers[i])
                 c->finalizers[i](ptr);
-
-            // Free the memory and clear its tracking slot.
             free(ptr);
             c->addresses[i] = 0;
             c->finalizers[i] = NULL;
@@ -60,20 +57,14 @@ void arena_destroy(Collector *c)
     i = 0;
     while (i < c->size)
     {
-        // Ensure the pointer has not already been freed.
         if (c->addresses[i] != 0)
         {
-            // Call the finalizer if it exists.
             if (c->finalizers[i])
                 c->finalizers[i]((void*)c->addresses[i]);
-
-            // Free the tracked memory.
             free((void*)c->addresses[i]);
         }
         i++;
     }
-
-    // Free the internal arrays and the collector itself.
     free(c->addresses);
     free(c->finalizers);
     free(c);

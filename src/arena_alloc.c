@@ -24,18 +24,14 @@ void* arena_alloc(Collector *c, size_t bytes)
 {
     void *ptr;
 
-    // If the arena is full, attempt to grow it.
     if (c->size == c->capacity)
     {
         if (!arena_grow(c))
             return (NULL);
     }
-    // Allocate the requested memory.
     ptr = malloc(bytes);
     if (!ptr)
         return (NULL);
-
-    // Register the new pointer in the arena.
     c->addresses[c->size] = (uintptr_t)ptr;
     c->finalizers[c->size] = NULL;
     c->size++;
