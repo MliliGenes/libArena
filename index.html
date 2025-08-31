@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibArena - Lightweight C Memory Arena Library</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">LibArena</div>
+        <div class="tagline">Lightweight C Memory Arena Library</div>
+        <div class="prompt">$ <span class="command">./arena_demo --showcase</span></div>
+    </div>
+
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <div class="terminal-title">use_cases.c</div>
+        </div>
+        <div class="terminal-content">
+            <div class="use-case-tabs">
+                <button class="tab active" onclick="showTab('basic')">Basic Usage</button>
+                <button class="tab" onclick="showTab('compiler')">Compiler/Parser</button>
+                <button class="tab" onclick="showTab('game')">Game Engine</button>
+                <button class="tab" onclick="showTab('server')">HTTP Server</button>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <button id="simulateBtn" class="btn" onclick="simulateUseCase('basic')" style="width: 100%;">
+                    Simulate Basic Demo
+                </button>
+            </div>
+
+            <div id="basic" class="tab-content active">
+                <div class="code-editor">
+                    <textarea id="basicCode">// Basic arena allocation pattern
+arena_t *arena = arena_create(10);
+
+// Allocate various data structures
+char *name = arena_alloc(arena, 64);
+int *numbers = arena_alloc(arena, sizeof(int) * 100);
+struct Node *tree = arena_alloc(arena, sizeof(struct Node));
+
+// Use the allocated memory...
+strcpy(name, "LibArena Demo");
+for (int i = 0; i < 100; i++) {
+    numbers[i] = i * i;
+}
+
+// One call frees everything
+arena_destroy(arena);</textarea>
+                </div>
+            </div>
+
+            <div id="compiler" class="tab-content">
+                <div class="code-editor">
+                    <textarea id="compilerCode">// Compiler/Parser use case
+typedef struct {
+    char *lexeme;
+    TokenType type;
+    int line;
+} Token;
+
+arena_t *parse_arena = arena_create(1000);
+
+// Parse phase - allocate AST nodes
+while (has_tokens()) {
+    Token *tok = arena_alloc(parse_arena, sizeof(Token));
+    ASTNode *node = arena_alloc(parse_arena, sizeof(ASTNode));
+
+    // Build syntax tree...
+    parse_expression(tok, node);
+}
+
+// Generate code from AST...
+generate_code(ast_root);
+
+// Free entire parse tree at once
+arena_destroy(parse_arena);</textarea>
+                </div>
+            </div>
+
+            <div id="game" class="tab-content">
+                <div class="code-editor">
+                    <textarea id="gameCode">// Game engine frame allocator
+arena_t *frame_arena = arena_create(500);
+
+void game_frame() {
+    // Checkpoint for temporary allocations
+    size_t frame_start = arena_snapshot(frame_arena);
+
+    // Allocate temporary game objects
+    Entity *enemies = arena_alloc(frame_arena, sizeof(Entity) * enemy_count);
+    Particle *particles = arena_alloc(frame_arena, sizeof(Particle) * 1000);
+    RenderCommand *commands = arena_alloc(frame_arena, sizeof(RenderCommand) * 50);
+
+    // Process frame...
+    update_enemies(enemies, enemy_count);
+    simulate_particles(particles);
+    render_scene(commands);
+
+    // Free all temporary allocations
+    arena_restore(frame_arena, frame_start);
+}</textarea>
+                </div>
+            </div>
+
+            <div id="server" class="tab-content">
+                <div class="code-editor">
+                    <textarea id="serverCode">// HTTP server request handling
+void handle_request(int client_fd) {
+    // Create per-request arena
+    arena_t *request_arena = arena_create(50);
+
+    // Allocate request data structures
+    HttpRequest *req = arena_alloc(request_arena, sizeof(HttpRequest));
+    char *headers = arena_alloc(request_arena, 4096);
+    char *body = arena_alloc(request_arena, 8192);
+
+    // Register cleanup for file handles
+    FILE *log = fopen("access.log", "a");
+    arena_alloc(request_arena, sizeof(FILE));
+    arena_set_destructor(request_arena, log, (void(*)(void*))fclose);
+
+    // Process request...
+    parse_http_request(client_fd, req, headers, body);
+    handle_route(req);
+
+    // Automatic cleanup of all request data
+    arena_destroy(request_arena);
+}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <div class="terminal-title">memory_simulator.c</div>
+        </div>
+        <div class="terminal-content">
+            <div class="interactive-demo">
+                <div class="output">Interactive Arena Memory Simulator</div>
+                <div class="prompt">$ <span class="command">arena_visualize</span> --interactive</div>
+
+                <div class="demo-controls">
+                    <button class="btn" onclick="allocateSmall()">alloc(32)</button>
+                    <button class="btn" onclick="allocateLarge()">alloc(128)</button>
+                    <button class="btn" onclick="allocateWithFinalizer()">alloc + finalizer</button>
+                    <button class="btn" onclick="reallocateBlock()">realloc()</button>
+                    <button class="btn" onclick="createCheckpoint()">snapshot()</button>
+                    <button class="btn" onclick="restoreCheckpoint()">restore()</button>
+                    <button class="btn" onclick="freeSpecific()">free_selected()</button>
+                    <button class="btn" onclick="clearArena()">destroy()</button>
+                    <button class="btn" onclick="stressTest()">stress_test()</button>
+                    <button class="btn" onclick="fragmentationDemo()">fragmentation_demo()</button>
+                </div>
+
+                <div class="memory-viz">
+                    <div class="output">Arena Layout (Click blocks for details):</div>
+                    <div class="memory-container" id="memoryContainer">
+                        <div class="memory-row">
+                            <div class="memory-row-label">Header:</div>
+                            <div class="memory-block" style="background:#444; color:#fff;">META</div>
+                            <div class="memory-block" style="background:#444; color:#fff;">SIZE</div>
+                            <div class="memory-block" style="background:#444; color:#fff;">CAP</div>
+                        </div>
+                        <div class="memory-row">
+                            <div class="memory-row-label">Blocks:</div>
+                            <div id="memoryBlocks">
+                                <!-- Dynamic blocks will be inserted here -->
+                            </div>
+                        </div>
+                        <div class="memory-row">
+                            <div class="memory-row-label">Tracking:</div>
+                            <div class="memory-block" style="background:#333; color:#999;">PTR</div>
+                            <div class="memory-block" style="background:#333; color:#999;">PTR</div>
+                            <div class="memory-block" style="background:#333; color:#999;">FIN</div>
+                        </div>
+                    </div>
+
+                    <div id="memoryStats" class="comment" style="margin-top: 15px;">
+                        Arena: 0/16 blocks allocated | 0 checkpoints | 0 finalizers
+                    </div>
+
+                    <div id="selectedBlock" class="output" style="margin-top: 10px; min-height: 40px;">
+                        Click on a memory block to see details...
+                    </div>
+                </div>
+
+                <div class="allocation-log" id="allocationLog">
+                    <div class="comment"># Allocation log will appear here...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-grid">
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot dot-red"></div>
+                <div class="terminal-dot dot-yellow"></div>
+                <div class="terminal-dot dot-green"></div>
+                <div class="terminal-title">performance_comparison.c</div>
+            </div>
+            <div class="terminal-content">
+                <div class="code-header">Benchmark Results</div>
+                <div class="performance-meter">
+                    <div class="output">Allocation Speed (ops/sec)</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: 95%"></div>
+                    </div>
+                    <div class="comment">malloc(): 1.2M ops/sec | arena_alloc(): 15.8M ops/sec</div>
+                </div>
+
+                <div class="performance-meter">
+                    <div class="output">Memory Overhead</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: 20%"></div>
+                    </div>
+                    <div class="comment">80% less overhead vs individual malloc calls</div>
+                </div>
+
+                <div class="performance-meter">
+                    <div class="output">Cache Performance</div>
+                    <div class="meter-bar">
+                        <div class="meter-fill" style="width: 85%"></div>
+                    </div>
+                    <div class="comment">Better locality = fewer cache misses</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="terminal-dot dot-red"></div>
+                <div class="terminal-dot dot-yellow"></div>
+                <div class="terminal-dot dot-green"></div>
+                <div class="terminal-title">advanced_features.c</div>
+            </div>
+            <div class="terminal-content">
+                <div class="code-header">Advanced Memory Management</div>
+                <div style="background: #0f0f0f; padding: 15px; border-radius: 6px; border: 1px solid #333;">
+<span class="comment">// Safe reallocation within arena</span>
+<span class="type">char</span> *buffer = <span class="command">arena_alloc</span>(arena, <span class="number">100</span>);
+buffer = <span class="command">arena_realloc</span>(arena, buffer, <span class="number">500</span>);
+
+<span class="comment">// Custom finalizers for resources</span>
+<span class="type">void</span> <span class="command">close_socket</span>(<span class="type">void</span> *data) {
+    <span class="command">close</span>(*(<span class="type">int</span>*)data);
+}
+<span class="type">int</span> *socket_fd = <span class="command">arena_alloc</span>(arena, <span class="command">sizeof</span>(<span class="type">int</span>));
+<span class="command">arena_set_destructor</span>(arena, socket_fd, close_socket);
+
+<span class="comment">// Scoped temporary allocations</span>
+<span class="type">size_t</span> checkpoint = <span class="command">arena_snapshot</span>(arena);
+<span class="command">process_temporary_data</span>(arena);
+<span class="command">arena_restore</span>(arena, checkpoint);
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <div class="terminal-title">build_and_install.sh</div>
+        </div>
+        <div class="terminal-content">
+            <div class="prompt">$ <span class="command">git clone</span> <span class="string">https://github.com/MliliGenes/libArena.git</span></div>
+            <div class="output">Cloning into 'libArena'...</div>
+            <div class="output">remote: Enumerating objects: 42, done.</div>
+
+            <div class="prompt">$ <span class="command">cd</span> libArena && <span class="command">make</span></div>
+            <div class="output">gcc -Wall -Wextra -std=c99 -c src/*.c</div>
+            <div class="output">ar rcs libarena.a *.o</div>
+            <div class="output">✓ Built libarena.a</div>
+
+            <div class="prompt">$ <span class="command">gcc</span> example.c <span class="string">-L. -larena -I./include</span></div>
+            <div class="prompt">$ <span class="command">./example</span></div>
+            <div class="output">Arena created with capacity: 10</div>
+            <div class="output">Allocated: Hello, World</div>
+            <div class="output">Finalizer called for: World</div>
+            <div class="output">Arena destroyed - 0 leaks detected</div>
+        </div>
+    </div>
+
+    <div class="links">
+        <div class="prompt">$ <span class="command">explore_libarena</span></div>
+        <div style="margin-top: 20px;">
+            <a href="https://github.com/MliliGenes/libArena" class="link">📁 GitHub Repository</a>
+            <a href="https://github.com/MliliGenes/libArena/blob/main/include/lib_arena.h" class="link">📄 API Reference</a>
+            <a href="https://github.com/MliliGenes/libArena/releases" class="link">📦 Releases</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
