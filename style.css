@@ -8,39 +8,24 @@
 
 body {
     font-family: 'JetBrains Mono', monospace;
-    background: #0a0a0a;
-    color: #00ff41;
+    background: #000000;
+    color: #ffffff;
     line-height: 1.6;
     overflow-x: hidden;
-    text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
-}
-
-body::before {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 2;
-    background-size: 100% 2px, 3px 100%;
-    pointer-events: none;
 }
 
 .terminal-window {
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid #00ff41;
-    border-radius: 0;
+    background: #111111;
+    border: 2px solid #333;
+    border-radius: 8px;
     margin: 20px;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
 .terminal-header {
-    background: #00ff41;
-    padding: 8px 12px;
-    border-bottom: 1px solid #00ff41;
+    background: #333;
+    padding: 10px 15px;
+    border-bottom: 1px solid #555;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -52,16 +37,14 @@ body::before {
     border-radius: 50%;
 }
 
-.dot-red, .dot-yellow, .dot-green {
-    background: #000;
-    border: 1px solid #000;
-}
+.dot-red { background: #ff5f56; }
+.dot-yellow { background: #ffbd2e; }
+.dot-green { background: #27ca3f; }
 
 .terminal-title {
-    color: #000;
-    font-size: 0.9rem;
+    color: #ccc;
+    font-size: 14px;
     margin-left: 10px;
-    font-weight: bold;
 }
 
 .terminal-content {
@@ -70,37 +53,35 @@ body::before {
 }
 
 .prompt {
-    color: #00ff41;
+    color: #ffffff;
 }
 
 .command {
-    color: #00ff41;
+    color: #cccccc;
 }
 
 .output {
-    color: #00ff41;
+    color: #f8f8f2;
 }
 
 .error {
-    color: #ff0000;
-    text-shadow: 0 0 5px #ff0000;
+    color: #ffffff;
 }
 
 .comment {
-    color: #008a23;
-    text-shadow: none;
+    color: #666666;
 }
 
 .string {
-    color: #00ff41;
+    color: #dddddd;
 }
 
 .number {
-    color: #00ff41;
+    color: #bbbbbb;
 }
 
 .type {
-    color: #00ff41;
+    color: #cccccc;
 }
 
 .header {
@@ -110,18 +91,16 @@ body::before {
 }
 
 .logo {
-    font-size: 3rem;
+    font-size: 3em;
     font-weight: 700;
     margin-bottom: 10px;
-    text-shadow: 0 0 20px #00ff41;
-    color: #00ff41;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .tagline {
-    font-size: 1.2rem;
-    color: #00ff41;
+    font-size: 1.2em;
+    color: #aaa;
     margin-bottom: 30px;
-    text-shadow: none;
 }
 
 .features-grid {
@@ -152,26 +131,24 @@ body::before {
 }
 
 .memory-row-label {
-    font-size: 0.8rem;
-    color: #008a23;
+    font-size: 12px;
+    color: #666;
     width: 80px;
     text-align: right;
     margin-right: 10px;
-    text-shadow: none;
 }
 
 .memory-block {
     width: 40px;
     height: 30px;
-    border-radius: 0;
-    font-size: 0.7rem;
+    border-radius: 4px;
+    font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
     cursor: pointer;
     position: relative;
-    background-color: transparent;
 }
 
 .memory-block:hover {
@@ -179,31 +156,31 @@ body::before {
 }
 
 .memory-block.selected {
-    box-shadow: 0 0 10px #00ff41;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .block-allocated {
-    background: #00ff41;
+    background: #ffffff;
     color: #000;
-    border: 1px solid #00ff41;
+    border: 2px solid #fff;
 }
 
 .block-free {
-    background: transparent;
-    color: #008a23;
-    border: 1px dashed #008a23;
+    background: #222;
+    color: #666;
+    border: 1px dashed #555;
 }
 
 .block-checkpoint {
-    background: #008a23;
+    background: #888888;
     color: #000;
-    border: 1px solid #00ff41;
+    border: 2px solid #aaa;
 }
 
 .block-finalizer {
-    background: #00ff41;
+    background: #ffffff;
     color: #000;
-    border: 1px solid #00ff41;
+    border: 2px solid #fff;
 }
 
 .block-finalizer::after {
@@ -211,16 +188,15 @@ body::before {
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #008a23;
-    color: #000;
-    width: 16px;
-    height: 16px;
-    border-radius: 0;
-    font-size: 0.7rem;
+    background: #666;
+    color: #fff;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    font-size: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #00ff41;
 }
 
 .interactive-demo {
@@ -235,21 +211,20 @@ body::before {
 }
 
 .btn {
-    background: transparent;
-    color: #00ff41;
-    border: 1px solid #00ff41;
+    background: #333;
+    color: #ffffff;
+    border: 1px solid #ffffff;
     padding: 10px 16px;
-    border-radius: 0;
+    border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 12px;
     transition: all 0.2s ease;
     text-align: center;
-    text-shadow: none;
 }
 
 .btn:hover:not(:disabled) {
-    background: #00ff41;
+    background: #ffffff;
     color: #000;
 }
 
@@ -263,21 +238,21 @@ body::before {
 }
 
 .CodeMirror {
-    background: rgba(0, 20, 0, 0.5) !important;
-    color: #00ff41 !important;
-    border: 1px solid #00ff41;
-    border-radius: 0;
+    background: #0f0f0f !important;
+    color: #ffffff !important;
+    border: 1px solid #333;
+    border-radius: 6px;
     font-family: 'JetBrains Mono', monospace !important;
-    font-size: 0.9rem !important;
+    font-size: 14px !important;
 }
 
 .CodeMirror-gutters {
-    background: #0a0a0a !important;
-    border-right: 1px solid #00ff41 !important;
+    background: #111 !important;
+    border-right: 1px solid #333 !important;
 }
 
 .CodeMirror-linenumber {
-    color: #008a23 !important;
+    color: #666 !important;
 }
 
 .performance-meter {
@@ -290,39 +265,37 @@ body::before {
 
 .meter-bar {
     height: 20px;
-    background: #008a23;
-    border-radius: 0;
+    background: #333;
+    border-radius: 10px;
     overflow: hidden;
     margin: 10px 0;
-    border: 1px solid #00ff41;
 }
 
 .meter-fill {
     height: 100%;
-    background: #00ff41;
+    background: linear-gradient(90deg, #ffffff, #cccccc);
     transition: width 1s ease;
 }
 
 .links {
     text-align: center;
     padding: 40px 20px;
-    background: rgba(0, 0, 0, 0.5);
+    background: #111111;
 }
 
 .link {
-    color: #00ff41;
+    color: #ffffff;
     text-decoration: none;
     margin: 0 20px;
     padding: 10px 20px;
-    border: 1px solid #00ff41;
-    border-radius: 0;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
     display: inline-block;
     transition: all 0.2s ease;
-    text-shadow: none;
 }
 
 .link:hover {
-    background: #00ff41;
+    background: #ffffff;
     color: #000;
 }
 
@@ -339,25 +312,24 @@ body::before {
 .use-case-tabs {
     display: flex;
     margin-bottom: 20px;
-    border-bottom: 1px solid #00ff41;
+    border-bottom: 1px solid #333;
 }
 
 .tab {
     padding: 10px 20px;
-    background: transparent;
+    background: #222;
     border: none;
-    color: #00ff41;
+    color: #ccc;
     cursor: pointer;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 14px;
     transition: all 0.2s ease;
-    text-shadow: none;
 }
 
 .tab.active {
-    background: #00ff41;
-    color: #000;
-    border-bottom: 1px solid #00ff41;
+    background: #111;
+    color: #fff;
+    border-bottom: 2px solid #fff;
 }
 
 .tab-content {
@@ -369,14 +341,14 @@ body::before {
 }
 
 .allocation-log {
-    background: rgba(0, 20, 0, 0.5);
-    border: 1px solid #00ff41;
-    border-radius: 0;
+    background: #0a0a0a;
+    border: 1px solid #333;
+    border-radius: 4px;
     padding: 15px;
     max-height: 200px;
     overflow-y: auto;
     margin: 15px 0;
-    font-size: 0.8rem;
+    font-size: 12px;
 }
 
 .log-entry {
@@ -394,37 +366,10 @@ body::before {
     }
 
     .logo {
-        font-size: 2rem;
+        font-size: 2em;
     }
 
     .use-case-tabs {
         flex-direction: column;
-    }
-
-    .terminal-window {
-        margin: 10px;
-    }
-
-    .terminal-content {
-        padding: 10px;
-    }
-
-    .header {
-        padding: 20px 10px;
-    }
-
-    .memory-block {
-        width: 30px;
-        height: 25px;
-        font-size: 0.6rem;
-    }
-
-    .links {
-        padding: 20px 10px;
-    }
-
-    .link {
-        display: block;
-        margin: 10px 0;
     }
 }
