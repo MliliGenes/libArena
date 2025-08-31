@@ -16,22 +16,26 @@
  *    array and increments the arena's size.
  * 4. A `NULL` finalizer is set by default.
  *
- * @param c The arena collector instance.
+ * @param c The arena instance.
  * @param bytes The number of bytes to allocate.
  * @return A pointer to the newly allocated memory, or `NULL` on failure.
  */
-void* arena_alloc(Collector *c, size_t bytes)
+void* arena_alloc(arena_t *c, size_t bytes)
 {
     void *ptr;
 
+    // If the arena is full, attempt to grow it.
     if (c->size == c->capacity)
     {
         if (!arena_grow(c))
             return (NULL);
     }
+    // Allocate the requested memory.
     ptr = malloc(bytes);
     if (!ptr)
         return (NULL);
+
+    // Register the new pointer in the arena.
     c->addresses[c->size] = (uintptr_t)ptr;
     c->finalizers[c->size] = NULL;
     c->size++;

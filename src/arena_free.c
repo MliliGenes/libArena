@@ -15,10 +15,10 @@
  * 3. Clears the entry in the `addresses` and `finalizers` arrays to prevent
  *    double-frees.
  *
- * @param c The arena collector instance.
+ * @param c The arena instance.
  * @param ptr The pointer to the memory to be freed.
  */
-void arena_free(Collector *c, void *ptr)
+void arena_free(arena_t *c, void *ptr)
 {
     size_t i;
 
@@ -27,8 +27,11 @@ void arena_free(Collector *c, void *ptr)
     {
         if ((void*)c->addresses[i] == ptr)
         {
+            // If a finalizer exists, call it before freeing.
             if (c->finalizers[i])
                 c->finalizers[i](ptr);
+
+            // Free the memory and clear its tracking slot.
             free(ptr);
             c->addresses[i] = 0;
             c->finalizers[i] = NULL;
@@ -45,9 +48,9 @@ void arena_free(Collector *c, void *ptr)
  * calls any registered finalizers, and frees the associated memory.
  * Finally, it frees the internal tracking arrays and the collector struct itself.
  *
- * @param c The arena collector to be destroyed.
+ * @param c The arena to be destroyed.
  */
-void arena_destroy(Collector *c)
+void arena_destroy(arena_t *c)
 {
     size_t i;
 
@@ -57,14 +60,20 @@ void arena_destroy(Collector *c)
     i = 0;
     while (i < c->size)
     {
+        // Ensure the pointer has not already been freed.
         if (c->addresses[i] != 0)
         {
+            // Call the finalizer if it exists.
             if (c->finalizers[i])
                 c->finalizers[i]((void*)c->addresses[i]);
+
+            // Free the tracked memory.
             free((void*)c->addresses[i]);
         }
         i++;
     }
+
+    // Free the internal arrays and the collector itself.
     free(c->addresses);
     free(c->finalizers);
     free(c);

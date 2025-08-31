@@ -15,19 +15,21 @@
  * The finalizer will be called when the pointer is freed via `arena_free`
  * or `arena_destroy`.
  *
- * @param c The arena collector instance.
+ * @param c The arena instance.
  * @param ptr The pointer to which the finalizer should be attached.
  * @param finalize A function pointer to the custom cleanup routine.
  */
-void arena_set_destructor(Collector *c, void *ptr, void (*finalize)(void*))
+void arena_set_destructor(arena_t *c, void *ptr, void (*finalize)(void*))
 {
     size_t i;
 
     i = 0;
     while (i < c->size)
     {
+        // Find the matching pointer in the registry.
         if ((void*)c->addresses[i] == ptr)
         {
+            // Assign the finalizer to the corresponding slot.
             c->finalizers[i] = finalize;
             return;
         }

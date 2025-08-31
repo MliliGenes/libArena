@@ -15,18 +15,21 @@
  * 4. On successful reallocation, it updates the corresponding address in the
  *    arena's tracking array.
  *
- * @param c The arena collector instance.
+ * @param c The arena instance.
  * @param ptr The pointer to the memory block to reallocate. Can be `NULL`.
  * @param new_size The new size for the memory block.
  * @return A pointer to the reallocated memory, or `NULL` on failure.
  */
-void* arena_realloc(Collector *c, void *ptr, size_t new_size)
+void* arena_realloc(arena_t *c, void *ptr, size_t new_size)
 {
     size_t i;
     void *new_ptr;
 
+    // If the pointer is NULL, behave like a standard allocation.
     if (!ptr)
         return (arena_alloc(c, new_size));
+
+    // Find the pointer in the arena's registry.
     i = 0;
     while (i < c->size)
     {
@@ -34,11 +37,17 @@ void* arena_realloc(Collector *c, void *ptr, size_t new_size)
             break;
         i++;
     }
+
+    // If the pointer is not tracked by the arena, return NULL.
     if (i == c->size)
         return (NULL);
+
+    // Reallocate the memory block.
     new_ptr = realloc(ptr, new_size);
     if (!new_ptr)
         return (NULL);
+
+    // Update the address in the arena.
     c->addresses[i] = (uintptr_t)new_ptr;
     return (new_ptr);
 }

@@ -13,7 +13,7 @@
  * Example usage:
  * @code
  * // Create an arena
- * Collector *arena = arena_create(10);
+ * arena_t *arena = arena_create(10);
  *
  * // Allocate memory
  * int *arr = arena_alloc(arena, sizeof(int) * 5);
@@ -26,23 +26,25 @@
 #ifndef LIBARENA_H
 #define LIBARENA_H
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
- * @struct Collector
+ * @struct s_collector
  * @brief Manages a collection of memory allocations.
  *
- * The Collector is the core of the library, tracking pointers to allocated
+ * The arena_t is the core of the library, tracking pointers to allocated
  * memory, their corresponding finalizers, and the arena's capacity.
  *
- * @var Collector::addresses
+ * @var s_collector::addresses
  *      Array of pointers to the allocated memory blocks.
- * @var Collector::finalizers
+ * @var s_collector::finalizers
  *      Array of function pointers for custom cleanup routines.
- * @var Collector::capacity
+ * @var s_collector::capacity
  *      The maximum number of allocations the arena can track.
- * @var Collector::size
+ * @var s_collector::size
  *      The current number of active allocations.
  * @since 1.0.0
  */
@@ -52,7 +54,7 @@ typedef struct s_collector
     void            (**finalizers)(void*);
     size_t          capacity;
     size_t          size;
-} Collector;
+} arena_t;
 
 /* ==========================
    Core API
@@ -61,14 +63,14 @@ typedef struct s_collector
 /**
  * @brief Creates a new memory arena.
  *
- * Initializes a `Collector` instance with a specified initial capacity for
+ * Initializes a `arena_t` instance with a specified initial capacity for
  * tracking allocations.
  *
  * @param initial_capacity The starting number of allocations the arena can hold.
- * @return A pointer to the new `Collector`, or `NULL` if initialization fails.
+ * @return A pointer to the new `arena_t`, or `NULL` if initialization fails.
  * @since 1.0.0
  */
-Collector *arena_create(size_t initial_capacity);
+arena_t *arena_create(size_t initial_capacity);
 
 /**
  * @brief Doubles the tracking capacity of the arena.
@@ -77,23 +79,23 @@ Collector *arena_create(size_t initial_capacity);
  * It reallocates the internal arrays (`addresses` and `finalizers`) to
  * accommodate more pointers.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @return `1` on success, `0` if memory allocation fails.
  * @since 1.0.0
  */
-int arena_grow(Collector *c);
+int arena_grow(arena_t *c);
 
 /**
  * @brief Allocates memory and tracks it in the arena.
  *
  * If the arena is at capacity, it will attempt to grow before allocating.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @param bytes The number of bytes to allocate.
  * @return A pointer to the allocated memory, or `NULL` on failure.
  * @since 1.0.0
  */
-void *arena_alloc(Collector *c, size_t bytes);
+void *arena_alloc(arena_t *c, size_t bytes);
 
 /**
  * @brief Reallocates a tracked memory block.
@@ -101,13 +103,13 @@ void *arena_alloc(Collector *c, size_t bytes);
  * Safely reallocates a pointer that is already tracked by the arena,
  * updating the internal registry with the new address.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @param ptr A pointer to a previously allocated block.
  * @param new_size The new size in bytes for the memory block.
  * @return A pointer to the reallocated memory, or `NULL` on failure.
  * @since 1.0.0
  */
-void *arena_realloc(Collector *c, void *ptr, size_t new_size);
+void *arena_realloc(arena_t *c, void *ptr, size_t new_size);
 
 /**
  * @brief Registers a custom cleanup function for an allocation.
@@ -117,12 +119,12 @@ void *arena_realloc(Collector *c, void *ptr, size_t new_size);
  *
  * @note The finalizer should not free the pointer itself; the arena handles this.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @param ptr The pointer to associate the finalizer with.
  * @param finalize The function to call upon cleanup.
  * @since 1.0.0
  */
-void arena_set_destructor(Collector *c, void *ptr, void (*finalize)(void*));
+void arena_set_destructor(arena_t *c, void *ptr, void (*finalize)(void*));
 
 /**
  * @brief Frees a single tracked allocation from the arena.
@@ -130,11 +132,11 @@ void arena_set_destructor(Collector *c, void *ptr, void (*finalize)(void*));
  * If a finalizer is registered for the pointer, it is called before the
  * memory is freed.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @param ptr The pointer to the memory to free.
  * @since 1.0.0
  */
-void arena_free(Collector *c, void *ptr);
+void arena_free(arena_t *c, void *ptr);
 
 /**
  * @brief Creates a checkpoint of the current allocation state.
@@ -142,11 +144,11 @@ void arena_free(Collector *c, void *ptr);
  * Returns a snapshot of the arena's current size. This can be used with
  * `arena_restore` to implement scoped allocations.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @return A checkpoint value representing the current number of allocations.
  * @since 1.0.0
  */
-size_t arena_snapshot(Collector *c);
+size_t arena_snapshot(arena_t *c);
 
 /**
  * @brief Frees all allocations made after a specific checkpoint.
@@ -154,21 +156,21 @@ size_t arena_snapshot(Collector *c);
  * Rolls back the arena's state to a previous snapshot, freeing all memory
  * allocated since that point.
  *
- * @param c A pointer to the `Collector` instance.
+ * @param c A pointer to the `arena_t` instance.
  * @param checkpoint The checkpoint to restore to, obtained from `arena_snapshot`.
  * @since 1.0.0
  */
-void arena_restore(Collector *c, size_t checkpoint);
+void arena_restore(arena_t *c, size_t checkpoint);
 
 /**
  * @brief Destroys the arena and frees all tracked allocations.
  *
  * This function iterates through all tracked pointers, calls any registered
- * finalizers, frees the memory, and finally frees the `Collector` itself.
+ * finalizers, frees the memory, and finally frees the `arena_t` itself.
  *
- * @param c A pointer to the `Collector` instance to be destroyed.
+ * @param c A pointer to the `arena_t` instance to be destroyed.
  * @since 1.0.0
  */
-void arena_destroy(Collector *c);
+void arena_destroy(arena_t *c);
 
 #endif /* LIBARENA_H */

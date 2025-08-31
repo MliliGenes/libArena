@@ -22,7 +22,7 @@ void data_finalizer(void *ptr)
 
 int main(void)
 {
-    Collector *c = arena_create(2);
+    arena_t *c = arena_create(2);
     if (!c)
         return (1);
 
