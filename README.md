@@ -1,4 +1,4 @@
-# LibArena: A Lightweight C Memory Arena Library
+# Lib-arena: A Lightweight C Memory Arena Library
 
 LibArena is a small and efficient C library for memory management using the arena allocation pattern. It is designed to simplify memory tracking, prevent common errors like memory leaks, and provide fine-grained control over allocation lifetimes.
 
